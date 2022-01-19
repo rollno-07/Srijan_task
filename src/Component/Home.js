@@ -1,9 +1,17 @@
 import xlsx from "xlsx";
 import React, { useState } from "react";
+import Handsontable from "handsontable";
+import { HotTable, HotColumn } from "@handsontable/react";
+import "handsontable/dist/handsontable.min.css";
 
 function Home() {
-  const [items, setItems] = useState([]);
-
+  const [items, setItems] = useState([1]);
+  const hotData = Handsontable.helper.createSpreadsheetData(items.length, 3);
+  const itemKey = items.map((item) => {
+    return Object.keys(item);
+  });
+  let single = itemKey[0];
+  console.log(single);
   const readExcel = (file) => {
     const promise = new Promise((resolve, reject) => {
       const fileReader = new FileReader();
@@ -22,10 +30,22 @@ function Home() {
         reject(err);
       };
     });
-    promise.then((d) => {
-      console.log(d);
-      setItems(d);
-    });
+    promise
+      .then((d) => {
+        console.log(d);
+        setItems(d);
+      })
+      .catch((err) => {
+        return <h1>{err}</h1>;
+      });
+  };
+
+  const hotSettings = {
+    data: items.map((item) => {
+      return Object.values(item);
+    }),
+    rowHeaders: true,
+    licenseKey: "non-commercial-and-evaluation",
   };
 
   return (
@@ -38,24 +58,12 @@ function Home() {
           readExcel(file);
         }}
       />
-      <table class="table container">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">DOB</th>
-            <th scope="col">City</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.DOB}>
-              <th>{item.Name}</th>
-              <td>{item.DOB}</td>
-              <td>{item.City}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      <HotTable settings={hotSettings}>
+        {single.map((singleKey, index) => {
+          return <HotColumn title={singleKey} key={index} />;
+        })}
+      </HotTable>
     </div>
   );
 }
